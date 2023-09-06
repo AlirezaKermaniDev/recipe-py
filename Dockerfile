@@ -28,8 +28,7 @@ RUN python -m venv /py && \
     mkdir -p /vol/web/media && \
     mkdir -p /vol/web/static && \
     chown -R django-user:django-user /vol && \
-    chmod -R g+w  /vol/web/media && \
-    chmod -R g+w  /vol/web/static
+    chmod -R g+rw /vol
 
 ENV PATH="/py/bin:$PATH"
 
