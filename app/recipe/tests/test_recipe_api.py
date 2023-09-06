@@ -9,7 +9,8 @@ import os
 from PIL import Image
 from core.models import (
     Recipe,
-    Tag
+    Tag,
+    Ingredient
 )
 from recipe.serializers import (
     RecipeSerializer,
@@ -205,6 +206,44 @@ class PrivateRecipeApiTests(TestCase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(recipe.tags.count(), 0)
+
+    def test_filter_by_tafs(self):
+        r1 = create_recipe(user=self.user, title='recipe1')
+        r2 = create_recipe(user=self.user, title='recipe2')
+        tag1 = Tag.objects.create(user=self.user, name='tag1')
+        tag2 = Tag.objects.create(user=self.user, name='tag2')
+        r1.tags.add(tag1)
+        r2.tags.add(tag2)
+        r3 = create_recipe(user=self.user, title='recipe3')
+
+        params = {'tags': f'{tag1.id},{tag2.id}'}
+        res = self.client.get(RECIPES_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
+
+    def test_filter_by_tags(self):
+        r1 = create_recipe(user=self.user, title='recipe1')
+        r2 = create_recipe(user=self.user, title='recipe2')
+        ing1 = Ingredient.objects.create(user=self.user, name='ing1')
+        ing2 = Ingredient.objects.create(user=self.user, name='ing2')
+        r1.ingredients.add(ing1)
+        r2.ingredients.add(ing2)
+        r3 = create_recipe(user=self.user, title='recipe3')
+
+        params = {'ingredients': f'{ing1.id},{ing2.id}'}
+        res = self.client.get(RECIPES_URL, params)
+
+        s1 = RecipeSerializer(r1)
+        s2 = RecipeSerializer(r2)
+        s3 = RecipeSerializer(r3)
+        self.assertIn(s1.data, res.data)
+        self.assertIn(s2.data, res.data)
+        self.assertNotIn(s3.data, res.data)
 
 
 class ImageUploadTests(TestCase):
